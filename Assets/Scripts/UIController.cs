@@ -7,6 +7,7 @@ public class UIController : MonoBehaviour
 
     [SerializeField] private GameObject clickFlaskUI;
     [SerializeField] private GameObject selectFlaskUI;
+    [SerializeField] private GameObject clickToStirUI;
 
     private void Awake()
     {
@@ -28,6 +29,11 @@ public class UIController : MonoBehaviour
     public void ToggleSelectFlaskUI(bool value, float delay)
     {
         StartCoroutine(ToggleUIWithDelay(selectFlaskUI, value, delay));
+    }
+
+    public void ToggleClickStirUI(bool value, float delay)
+    {
+        StartCoroutine(ToggleUIWithDelay(clickToStirUI, value, delay));
     }
 
     private IEnumerator ToggleUIWithDelay(GameObject uiElement, bool value, float delay)

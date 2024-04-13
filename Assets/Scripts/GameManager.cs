@@ -20,15 +20,11 @@ public class GameManager : MonoBehaviour
         ClickFlaskToSelect,
         SelectFlaskAorB,
         FirstFlaskAndTestTubeAnimation,
-        DragTestTubeForPouring,
-        FirstPouringAnimation,
-        FirstSwipeFlaskToShake,
+        FirstClickFlaskToShake,
+        FirstFlaskShakeAnimation,
         FirstStepEndAnimation,
         ClickOtherFlaskToSelect,
         SecondFlaskAndTestTubeAnimation,
-        DragTestTubeForPouringRemaining,
-        SecondPouringAnimation,
-        SecondSwipeFlaskToSelect,
         SecondStepEndAnimation,
     }
 
@@ -85,6 +81,12 @@ public class GameManager : MonoBehaviour
                         {
                             // Handle invalid selection (optional)
                             Debug.Log("Invalid selection. Please select Flask A or B.");
+                        }
+                        break;
+                    case GameState.FirstClickFlaskToShake:
+                        if(hitObject == selectedFlask)
+                        {
+                            UpdateGameState(GameState.FirstFlaskShakeAnimation);
                         }
                         break;
 
@@ -148,22 +150,34 @@ public class GameManager : MonoBehaviour
                 float animationLength = animator.PlayAnimation(animationName);
 
                 // Transition to next state after animation length
-                StartCoroutine(TransitionAfterAnimation(animationLength));
+                StartCoroutine(TransitionAfterAnimation(GameState.FirstClickFlaskToShake, animationLength));
                 break;
 
-            case GameState.DragTestTubeForPouring:
+            case GameState.FirstClickFlaskToShake:
+                uiController.ToggleClickStirUI(true, 0);
+                isTouchEnabled = true;
                 break;
+
+            case GameState.FirstFlaskShakeAnimation:
+                uiController.ToggleClickStirUI(false, 0);
+                isTouchEnabled = false;
+                // Play the shake animation based on selected flask
+                string shakeAnimation = (selectedFlask == flaskA) ? "FlaskAShake" : "FlaskBShake";
+                animator.PlayAnimation(shakeAnimation);
+                break;
+
             // Other cases for state transitions as needed
 
             default:
-                isTouchEnabled = false;
+
                 break;
         }
     }
 
-    IEnumerator TransitionAfterAnimation(float seconds)
+
+    IEnumerator TransitionAfterAnimation(GameState gameState ,float seconds)
     {
         yield return new WaitForSeconds(seconds);
-        UpdateGameState(GameState.DragTestTubeForPouring); // Transition to next state after animation
+        UpdateGameState(gameState); // Transition to next state after animation
     }
 }
