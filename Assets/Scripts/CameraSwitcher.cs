@@ -29,10 +29,8 @@ public class CameraSwitcher : MonoBehaviour
         ActivateCamera(activeCameraType);
     }
 
-    // This method is called when the script starts
-    private void Start()
+    public void InitCameras()
     {
-        // Coroutine to initialize the cameras with a delay for smoother transition
         StartCoroutine(InitializeCameras());
     }
 
