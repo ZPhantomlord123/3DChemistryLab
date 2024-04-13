@@ -4,6 +4,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public CameraSwitcher cameraSwitcher;
+    public ObjectAnimator animator;
     public GameObject flaskA;
     public GameObject flaskB;
     public GameObject testTube;
@@ -35,6 +36,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        animator.PlayAnimation("None");
         cameraSwitcher.InitCameras();
         uiController = UIController.Instance;  // Get reference to UIController singleton
         StartCoroutine(EnableInput(3f));  // Enable input after a delay
@@ -75,7 +77,15 @@ public class GameManager : MonoBehaviour
                         break;
 
                     case GameState.SelectFlaskAorB:
-                        // Handle flask A or B selection if needed
+                        if (hitObject == flaskA || hitObject == flaskB)
+                        {
+                            PlayFirstFlaskAndTesTubeAnimation(hitObject);
+                        }
+                        else
+                        {
+                            // Handle invalid selection (optional)
+                            Debug.Log("Invalid selection. Please select Flask A or B.");
+                        }
                         break;
 
                     // Other cases for input handling as needed
@@ -97,6 +107,16 @@ public class GameManager : MonoBehaviour
         UpdateGameState(GameState.SelectFlaskAorB);
     }
 
+    private void PlayFirstFlaskAndTesTubeAnimation(GameObject flask)
+    {
+        selectedFlask = flask;
+        Debug.Log("Selected flask: " + flask.name);
+
+        cameraSwitcher.ActivateFullViewCamera();
+
+        UpdateGameState(GameState.FirstFlaskAndTestTubeAnimation);
+    }
+
     private void UpdateGameState(GameState nextState)
     {
         currentState = nextState;
@@ -110,63 +130,40 @@ public class GameManager : MonoBehaviour
 
             case GameState.ClickFlaskToSelect:
                 // Update UI to display context clue for selecting Flask A or B
-                uiController.ToggleClickFlaskUI(true,0);
+                uiController.ToggleClickFlaskUI(true, 0);
                 isTouchEnabled = true;
                 break;
 
             case GameState.SelectFlaskAorB:
-                uiController.ToggleClickFlaskUI(false,0);
+                uiController.ToggleClickFlaskUI(false, 0);
                 uiController.ToggleSelectFlaskUI(true, 1.6f);
                 isTouchEnabled = true;
                 break;
 
             case GameState.FirstFlaskAndTestTubeAnimation:
+                uiController.ToggleSelectFlaskUI(false, 0);
                 isTouchEnabled = false;
+                // Play the animation based on selected flask
+                string animationName = (selectedFlask == flaskA) ? "SelectFlaskAAndTestTube" : "SelectFlaskBAndTestTube";
+                float animationLength = animator.PlayAnimation(animationName);
+
+                // Transition to next state after animation length
+                StartCoroutine(TransitionAfterAnimation(animationLength));
                 break;
 
             case GameState.DragTestTubeForPouring:
-                isTouchEnabled = true;
                 break;
-
-            case GameState.FirstPouringAnimation:
-                isTouchEnabled = false;
-                break;
-
-            case GameState.FirstSwipeFlaskToShake:
-                isTouchEnabled = true;
-                break;
-
-            case GameState.FirstStepEndAnimation:
-                isTouchEnabled = false;
-                break;
-
-            case GameState.ClickOtherFlaskToSelect:
-                isTouchEnabled = true;
-                break;
-
-            case GameState.SecondFlaskAndTestTubeAnimation:
-                isTouchEnabled = false;
-                break;
-
-            case GameState.DragTestTubeForPouringRemaining:
-                isTouchEnabled = true;
-                break;
-
-            case GameState.SecondPouringAnimation:
-                isTouchEnabled = false;
-                break;
-
-            case GameState.SecondSwipeFlaskToSelect:
-                isTouchEnabled = true;
-                break;
-
-            case GameState.SecondStepEndAnimation:
-                isTouchEnabled = false;
-                break;
+            // Other cases for state transitions as needed
 
             default:
                 isTouchEnabled = false;
                 break;
         }
+    }
+
+    IEnumerator TransitionAfterAnimation(float seconds)
+    {
+        yield return new WaitForSeconds(seconds);
+        UpdateGameState(GameState.DragTestTubeForPouring); // Transition to next state after animation
     }
 }
