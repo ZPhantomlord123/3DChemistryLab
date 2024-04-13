@@ -11,6 +11,8 @@ public class GameManager : MonoBehaviour
     private GameObject selectedFlask;
     private bool isTouchEnabled = false;
 
+    private UIController uiController;  // Reference to UIController
+
     public enum GameState
     {
         IntroToFullView,
@@ -34,102 +36,65 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         cameraSwitcher.InitCameras();
-        StartCoroutine(EnableInput(1f));
+        uiController = UIController.Instance;  // Get reference to UIController singleton
+        StartCoroutine(EnableInput(3f));  // Enable input after a delay
         Debug.Log("Game started with IntroToFullView");
     }
 
-    IEnumerator EnableInput(float secs)
+    IEnumerator EnableInput(float seconds)
     {
-        yield return new WaitForSeconds(secs);
-        isTouchEnabled = true;
-        UpdateGameState(GameState.ClickFlaskToSelect);
+        yield return new WaitForSeconds(seconds);
+        UpdateGameState(GameState.ClickFlaskToSelect);  // Transition to ClickFlaskToSelect state
     }
 
     private void Update()
     {
-        // No input handling here
+        HandleInput();
     }
 
-    private void SelectConicalFlask(GameObject flask)
+    private void HandleInput()
     {
-        if (currentState != GameState.ClickFlaskToSelect)
-        {
-            Debug.LogWarning("Cannot select flask. Current state is not ClickFlaskToSelect.");
-            return;
-        }
+        if (!isTouchEnabled) return;  // If touch is not enabled, do nothing
 
-        if (flask == flaskA || flask == flaskB)
+        if (Input.GetMouseButtonDown(0))
         {
-            selectedFlask = flask;
-            cameraSwitcher.ActivateFlaskViewCamera();
-            isTouchEnabled = false;
-            UpdateGameState(GameState.FirstFlaskAndTestTubeAnimation);
-        }
-        else
-        {
-            Debug.LogWarning("Invalid selection. Click on one of the two flasks.");
-        }
-    }
+            RaycastHit hit;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-    private void SelectFlaskAorB(GameObject flask)
-    {
-        if (currentState != GameState.SelectFlaskAorB)
-        {
-            Debug.LogWarning("Cannot select flask. Current state is not SelectFlaskAorB.");
-            return;
-        }
+            if (Physics.Raycast(ray, out hit))
+            {
+                GameObject hitObject = hit.collider.gameObject;
 
-        if (flask == flaskA || flask == flaskB)
-        {
-            selectedFlask = flask;
-            isTouchEnabled = false;
-            UpdateGameState(GameState.DragTestTubeForPouring);
-        }
-        else
-        {
-            Debug.LogWarning("Invalid selection. Click on one of the two flasks.");
+                switch (currentState)
+                {
+                    case GameState.ClickFlaskToSelect:
+                        if (hitObject == flaskA || hitObject == flaskB)
+                        {
+                            ClickFlasks(hitObject);
+                        }
+                        break;
+
+                    case GameState.SelectFlaskAorB:
+                        // Handle flask A or B selection if needed
+                        break;
+
+                    // Other cases for input handling as needed
+
+                    default:
+                        break;
+                }
+            }
         }
     }
 
-    private void SwipeFlaskToShake(GameObject flask)
+    private void ClickFlasks(GameObject flask)
     {
-        if (currentState != GameState.FirstSwipeFlaskToShake)
-        {
-            Debug.LogWarning("Cannot swipe flask. Current state is not FirstSwipeFlaskToShake.");
-            return;
-        }
+        selectedFlask = flask;
+        Debug.Log("Selected flask: " + flask.name);
 
-        if (flask == selectedFlask)
-        {
-            // Implement swipe logic here (Not implemented here for brevity)
+        cameraSwitcher.ActivateFlaskViewCamera();
 
-            // After swipe, proceed to next step
-            UpdateGameState(GameState.FirstStepEndAnimation);
-        }
-        else
-        {
-            Debug.LogWarning("Invalid flask selection for swipe.");
-        }
-    }
-
-    private void SelectSecondFlask(GameObject flask)
-    {
-        if (currentState != GameState.SecondSwipeFlaskToSelect)
-        {
-            Debug.LogWarning("Cannot select flask. Current state is not SecondSwipeFlaskToSelect.");
-            return;
-        }
-
-        if (flask == flaskA || flask == flaskB)
-        {
-            selectedFlask = flask;
-            isTouchEnabled = false;
-            UpdateGameState(GameState.SecondFlaskAndTestTubeAnimation);
-        }
-        else
-        {
-            Debug.LogWarning("Invalid selection. Click on one of the two flasks.");
-        }
+        UpdateGameState(GameState.SelectFlaskAorB);
     }
 
     private void UpdateGameState(GameState nextState)
@@ -137,31 +102,69 @@ public class GameManager : MonoBehaviour
         currentState = nextState;
         Debug.Log("Current state: " + currentState);
 
-        // Handle input based on the new game state
         switch (currentState)
         {
+            case GameState.IntroToFullView:
+                isTouchEnabled = false;
+                break;
+
             case GameState.ClickFlaskToSelect:
-                // Enable touch input to select flask
+                // Update UI to display context clue for selecting Flask A or B
+                uiController.ToggleClickFlaskUI(true,0);
                 isTouchEnabled = true;
                 break;
 
             case GameState.SelectFlaskAorB:
-                // Enable touch input to select flask A or B
+                uiController.ToggleClickFlaskUI(false,0);
+                uiController.ToggleSelectFlaskUI(true, 1.6f);
                 isTouchEnabled = true;
+                break;
+
+            case GameState.FirstFlaskAndTestTubeAnimation:
+                isTouchEnabled = false;
+                break;
+
+            case GameState.DragTestTubeForPouring:
+                isTouchEnabled = true;
+                break;
+
+            case GameState.FirstPouringAnimation:
+                isTouchEnabled = false;
                 break;
 
             case GameState.FirstSwipeFlaskToShake:
-                // Enable touch input for swiping the flask
                 isTouchEnabled = true;
+                break;
+
+            case GameState.FirstStepEndAnimation:
+                isTouchEnabled = false;
+                break;
+
+            case GameState.ClickOtherFlaskToSelect:
+                isTouchEnabled = true;
+                break;
+
+            case GameState.SecondFlaskAndTestTubeAnimation:
+                isTouchEnabled = false;
+                break;
+
+            case GameState.DragTestTubeForPouringRemaining:
+                isTouchEnabled = true;
+                break;
+
+            case GameState.SecondPouringAnimation:
+                isTouchEnabled = false;
                 break;
 
             case GameState.SecondSwipeFlaskToSelect:
-                // Enable touch input to select second flask
                 isTouchEnabled = true;
                 break;
 
+            case GameState.SecondStepEndAnimation:
+                isTouchEnabled = false;
+                break;
+
             default:
-                // Disable touch input for other states
                 isTouchEnabled = false;
                 break;
         }
