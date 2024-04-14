@@ -4,6 +4,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public CameraSwitcher cameraSwitcher;
+    public Animator characterAnimator;
     public ObjectAnimator animator;
     public GameObject flaskA;
     public GameObject flaskB;
@@ -164,6 +165,7 @@ public class GameManager : MonoBehaviour
                 // Play the shake animation based on selected flask
                 string shakeAnimation = (selectedFlask == flaskA) ? "FlaskAShake" : "FlaskBShake";
                 animator.PlayAnimation(shakeAnimation);
+                characterAnimator.Play("ExcitedAnim");
                 break;
 
             // Other cases for state transitions as needed
