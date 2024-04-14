@@ -72,13 +72,20 @@ public class GameManager : MonoBehaviour
                     case GameState.ClickFlaskToSelect:
                         if (hitObject == flaskA || hitObject == flaskB)
                         {
+                            AudioManager.instance.PlaySoundEffect();
                             ClickFlasks(hitObject);
+                        }
+                        else
+                        {
+                            // Handle invalid selection (optional)
+                            Debug.Log("Invalid selection. Please click correctly");
                         }
                         break;
 
                     case GameState.SelectFlaskAorB:
                         if (hitObject == flaskA || hitObject == flaskB)
                         {
+                            AudioManager.instance.PlaySoundEffect();
                             PlayFirstFlaskAndTesTubeAnimation(hitObject);
                         }
                         else
@@ -91,22 +98,40 @@ public class GameManager : MonoBehaviour
                     case GameState.FirstClickFlaskToShake:
                         if (hitObject == selectedFlask)
                         {
+                            AudioManager.instance.PlaySoundEffect();
                             UpdateGameState(GameState.FirstFlaskShakeAnimation);
+                        }
+                        else
+                        {
+                            // Handle invalid selection (optional)
+                            Debug.Log("Invalid selection. Please click correctly");
                         }
                         break;
 
                     case GameState.ClickOtherFlaskToSelect:
                         if (hitObject != selectedFlask && (hitObject == flaskA || hitObject == flaskB))
                         {
+                            AudioManager.instance.PlaySoundEffect();
                             selectedFlask = hitObject;
                             UpdateGameState(GameState.SecondFlaskAndTestTubeAnimation);
+                        }
+                        else
+                        {
+                            // Handle invalid selection (optional)
+                            Debug.Log("Invalid selection. Please click correctly");
                         }
                         break;
 
                     case GameState.SecondClickFlaskToShake:
                         if (hitObject == selectedFlask)
                         {
+                            AudioManager.instance.PlaySoundEffect();
                             UpdateGameState(GameState.SecondClickFlaskToShakeAnimation);
+                        }
+                        else
+                        {
+                            // Handle invalid selection (optional)
+                            Debug.Log("Invalid selection. Please click correctly");
                         }
                         break;
 
