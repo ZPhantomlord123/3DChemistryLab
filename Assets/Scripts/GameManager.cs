@@ -84,10 +84,18 @@ public class GameManager : MonoBehaviour
                             Debug.Log("Invalid selection. Please select Flask A or B.");
                         }
                         break;
+
                     case GameState.FirstClickFlaskToShake:
-                        if(hitObject == selectedFlask)
+                        if (hitObject == selectedFlask)
                         {
                             UpdateGameState(GameState.FirstFlaskShakeAnimation);
+                        }
+                        break;
+
+                    case GameState.ClickOtherFlaskToSelect:
+                        if (hitObject != selectedFlask && (hitObject == flaskA || hitObject == flaskB))
+                        {
+                            UpdateGameState(GameState.SecondFlaskAndTestTubeAnimation);
                         }
                         break;
 
@@ -99,6 +107,7 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+
 
     private void ClickFlasks(GameObject flask)
     {
@@ -164,8 +173,33 @@ public class GameManager : MonoBehaviour
                 isTouchEnabled = false;
                 // Play the shake animation based on selected flask
                 string shakeAnimation = (selectedFlask == flaskA) ? "FlaskAShake" : "FlaskBShake";
-                animator.PlayAnimation(shakeAnimation);
+                float shakeAnimationLength = animator.PlayAnimation(shakeAnimation);
                 characterAnimator.Play("ExcitedAnim");
+
+                // Transition to next state after animation length
+                StartCoroutine(TransitionAfterAnimation(GameState.FirstStepEndAnimation, shakeAnimationLength-3f));
+                break;
+
+            case GameState.FirstStepEndAnimation:
+                isTouchEnabled = false;
+
+                // Play the end animation based on the selected flask
+                string endAnimation = (selectedFlask == flaskA) ? "FlaskAEndAnimation" : "FlaskBEndAnimation";
+                float endAnimationLength = animator.PlayAnimation(endAnimation);
+                characterAnimator.Play("Idle");
+
+                // Transition to next state after animation length
+                StartCoroutine(TransitionAfterAnimation(GameState.ClickOtherFlaskToSelect, endAnimationLength));
+                break;
+
+            case GameState.ClickOtherFlaskToSelect:
+                isTouchEnabled = true;
+                uiController.ToggleSelectSecondFlaskUI(true, 0);
+                break;
+
+            case GameState.SecondFlaskAndTestTubeAnimation:
+                isTouchEnabled = false;
+                uiController.ToggleSelectSecondFlaskUI(false, 0);
                 break;
 
             // Other cases for state transitions as needed
