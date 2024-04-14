@@ -9,6 +9,7 @@ public class UIController : MonoBehaviour
     [SerializeField] private GameObject selectFlaskUI;
     [SerializeField] private GameObject clickToStirUI;
     [SerializeField] private GameObject selectSecondFlaskUI;
+    [SerializeField] private GameObject replayUI;
 
     private void Awake()
     {
@@ -40,6 +41,11 @@ public class UIController : MonoBehaviour
     public void ToggleSelectSecondFlaskUI(bool value, float delay)
     {
         StartCoroutine(ToggleUIWithDelay(selectSecondFlaskUI, value, delay));
+    }
+
+    public void ToggleReplayUI(bool value, float delay)
+    {
+        StartCoroutine(ToggleUIWithDelay(replayUI, value, delay));
     }
 
     private IEnumerator ToggleUIWithDelay(GameObject uiElement, bool value, float delay)

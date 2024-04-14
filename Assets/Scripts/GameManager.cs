@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -187,7 +188,7 @@ public class GameManager : MonoBehaviour
                 characterAnimator.Play("ExcitedAnim");
 
                 // Transition to next state after animation length
-                StartCoroutine(TransitionAfterAnimation(GameState.FirstStepEndAnimation, shakeAnimationLength - 3f));
+                StartCoroutine(TransitionAfterAnimation(GameState.FirstStepEndAnimation, shakeAnimationLength));
                 break;
 
             case GameState.FirstStepEndAnimation:
@@ -207,7 +208,7 @@ public class GameManager : MonoBehaviour
                 uiController.ToggleSelectSecondFlaskUI(true, 0);
                 break;
             case GameState.SecondFlaskAndTestTubeAnimation:
-                uiController.ToggleSelectFlaskUI(false, 0);
+                uiController.ToggleSelectSecondFlaskUI(false, 0);
                 isTouchEnabled = false;
                 // Play the animation based on selected flask
                 string secondAnimationName = (selectedFlask == flaskA) ? "SecondSelectFlaskAAndTestTube" : "SecondSelectFlaskBAndTestTube";
@@ -231,19 +232,12 @@ public class GameManager : MonoBehaviour
                 characterAnimator.Play("IrritatedAnim");
 
                 // Transition to next state after animation length
-                StartCoroutine(TransitionAfterAnimation(GameState.SecondStepEndAnimation, secondShakeAnimationLength - 3f));
+                StartCoroutine(TransitionAfterAnimation(GameState.SecondStepEndAnimation, secondShakeAnimationLength));
                 break;
 
             case GameState.SecondStepEndAnimation:
                 isTouchEnabled = false;
-
-                // Play the end animation based on the selected flask
-                string secondEndAnimation = (selectedFlask == flaskA) ? "SecondFlaskAEndAnimation" : "SecondFlaskBEndAnimation";
-                float secondEndAnimationLength = animator.PlayAnimation(secondEndAnimation);
-                characterAnimator.Play("Idle");
-
-                // Transition to next state after animation length
-                StartCoroutine(TransitionAfterAnimation(GameState.ClickOtherFlaskToSelect, secondEndAnimationLength));
+                uiController.ToggleReplayUI(true, 2f);
                 break;
 
             // Other cases for state transitions as needed
@@ -255,9 +249,17 @@ public class GameManager : MonoBehaviour
 
 
 
-    IEnumerator TransitionAfterAnimation(GameState gameState ,float seconds)
+    IEnumerator TransitionAfterAnimation(GameState gameState, float seconds)
     {
         yield return new WaitForSeconds(seconds);
         UpdateGameState(gameState); // Transition to next state after animation
+    }
+
+    // Function to handle replay button press
+    public void OnReplayButtonPressed()
+    {
+        // Reload the current scene
+        Scene scene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(scene.name);
     }
 }

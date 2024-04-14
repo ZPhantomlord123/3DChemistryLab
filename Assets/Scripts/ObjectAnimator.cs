@@ -12,20 +12,7 @@ public class ObjectAnimator : MonoBehaviour
             return 0f;
         }
 
-        if (gameObject == null)
-        {
-            Debug.LogWarning("GameObject is null.");
-            return 0f;
-        }
-
-        Animator targetAnimator = GetComponent<Animator>();
-        if (targetAnimator == null)
-        {
-            Debug.LogWarning("Animator component not found on the GameObject.");
-            return 0f;
-        }
-
-        targetAnimator.CrossFade(animationName, 0f);
+        animator.CrossFade(animationName, 0f);
         return GetAnimationLength(animationName);
     }
 
@@ -37,19 +24,16 @@ public class ObjectAnimator : MonoBehaviour
             return 0f;
         }
 
-        if (!animator.HasState(0, Animator.StringToHash(animationName)))
+        AnimationClip[] clips = animator.runtimeAnimatorController.animationClips;
+        foreach (AnimationClip clip in clips)
         {
-            Debug.LogWarning("Animation not found: " + animationName);
-            return 0f;
+            if (clip.name == animationName)
+            {
+                return clip.length;
+            }
         }
 
-        AnimationClip clip = animator.runtimeAnimatorController.animationClips[0];
-        if (clip == null)
-        {
-            Debug.LogWarning("Animation clip not found: " + animationName);
-            return 0f;
-        }
-
-        return clip.length;
+        Debug.LogWarning("Animation clip not found: " + animationName);
+        return 0f;
     }
 }
